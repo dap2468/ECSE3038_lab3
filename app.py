@@ -71,11 +71,16 @@ async def retrive_tanks():
 
 @app.delete("/data/{id}",status_code=204)
 async def delete_tank(id: str):
+
+    found= await db["tank"].find_one({"_id": ObjectId(id)})
+    if (found) is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
     remove_tank= await db["tank"].delete_one({"_id":ObjectId(id)})
 
-    if remove_tank.modified_count == 1:
-        return {"message":"ITEM WAS DELETED "}
-    raise HTTPException(status_code=404, detail="Item not found")
+    return {"message":"ITEM WAS DELETED "}
+
+    
     
 
 @app.patch("/data/{id}")
@@ -87,5 +92,6 @@ async def do_update(id:str, request: Request):
          if (
                 updated_tank := await db["tank"].find_one({"_id": id})
             ) is not None:
-                return updated_tank
-    raise HTTPException(status_code=404, detail="Item not found")
+                return updated_tank   
+    else:
+         raise HTTPException(status_code=404, detail="Item not found")
